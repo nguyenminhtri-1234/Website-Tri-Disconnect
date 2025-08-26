@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/404.css') }}">
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+    <main class="frem">
+        <h1>404</h1>
+        <img src="{{ url_for('static',filename='img/404.gif') }}" alt="404 Not Found" class="img-404" />
+        <div class="msg" role="alert">Ô kìa! Trang này không có gì.<br>Nhấn vào bất kỳ đâu để về trang chủ.</div>
+    </main>
+    <script>
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".no-redirect")) {
+                window.location.href = "/";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tri Disconnect - Giải pháp chống gank cho bạn</title>
+<meta name="keywords" content="chặn netsupport school, Tri Disconnect, hetcuu, hetcuu.com,ngăn chặn NetSupport School,tdc,chống giáo viên theo dõi,netsupport school,cách cài netsupport school,cài netsupport school">
+<meta name="description" content="Cung cấp giải pháp chống gank trường học.">
+<link rel="icon" type="image/png" href="{{ url_for('static',filename='img/favicon.ico') }}" />
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet" />
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+<!-- Custom CSS -->
+{% if current_user.is_authenticated %}
+<link rel="stylesheet" href="{{ url_for('static',filename='css/style2.css') }}" />
+{% else %}
+<link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}" />
+{% endif %}
+<link rel="stylesheet" href="{{ url_for('static',filename='css/style1.css') }}"  media="print" onload="this.media='all'"/>
+<style>.loader-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;display:flex;justify-content:center;align-items:center;z-index:99999}.loader{width:120px;height:22px;border-radius:20px;color:#514b82;border:2px solid;position:relative}.loader::before{content:"";position:absolute;margin:2px;inset:0 100% 0 0;border-radius:inherit;background:currentColor;animation:l6 2s infinite}@keyframes l6{100%{inset:0}}</style>
+
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flashes">
+        {% for message in messages %}
+          <script>alert("{{ message|replace('"', '\"')|replace("'", "\'")|replace('\n', ' ') }}");</script>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <div class="loader-overlay">
+        <div class="loader"></div>
+  </div>
+  <script>
+      // Ẩn loader ngay khi DOM và CSS xong (DOMContentLoaded)
+      document.addEventListener('DOMContentLoaded', function () {
+          document.querySelector('.loader-overlay').style.display = 'none';
+      });
+  </script>
+  <main>
+  <header>
+    <div class="container header-inner">
+      <a href="#home" tabindex="0"><div class="logo" tabindex="0">TDC</div></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="#home" class="active" tabindex="0">Trang chủ</a>
+		{% if current_user.is_authenticated %}<a href="#payment" tabindex="0">Thanh toán</a>{% endif %}
+        <a href="#download" tabindex="0">Tải phần mềm</a>
+      </nav>
+      {% if current_user.is_authenticated %}
+      <div class="user-controls">
+        <div class="user-info" id="user-info-header" hidden>
+          <span>
+            <span style="color:#374151;font-weight:600;margin-right:8px;">Số dư:</span>
+            <span style="color:#16a34a;font-weight:700;margin-right:10px;">
+              {{ "{:,.0f}".format(current_user.tien).replace(",", ".") }} ₫
+            </span>
+            Chào, <span class="user-name">{{current_user.username}}</span>
+          </span>
+          <a class="btn-logout" type="button" aria-label="Đăng xuất người dùng" href="{{url_for('user_signout')}}">Đăng xuất</a>
+        </div>
+      </div>
+      {% else %}
+       <div class="user-controls">
+           <button class="btn-login" id="btn-login-header" type="button">Đăng nhập</button>
+           <button class="btn-register" id="btn-register-header" type="button">Đăng ký</button>
+      </div>
+      {% endif %}
+      <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-nav">&#9776;</button>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+      <a href="#home" tabindex="0">Trang chủ</a>
+      {% if current_user.is_authenticated %}<a href="#payment" tabindex="0">Thanh toán</a>{% endif %}
+      <a href="#download" tabindex="0">Tải phần mềm</a>
+    </nav>
+  </header>
+
+  <!-- Modal Login -->
+  <div class="modal-overlay" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="modal-login-title" tabindex="-1">
+    <div class="modal">
+      <button class="modal-close" aria-label="Đóng cửa sổ đăng nhập" id="modal-login-close">&times;</button>
+      <h3 id="modal-login-title">Đăng nhập</h3>
+      <form method="POST" action="{{ url_for('home') }}">
+        <input type="hidden" name="action" value="login">
+        <label for="login-email">User</label>
+        <input type="text" name="username" autocomplete="email" required />
+        <label for="login-password">Mật khẩu</label>
+        <input type="password" id="login-password" name="password" autocomplete="current-password" required />
+        <label for="login-password"></label>
+		    <div class="cf-turnstile" data-sitekey="0x4AAAAAABirtkhHHC8XNO5c"></div>
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <div style="margin-top:16px;text-align:right;">
+        <a type="button" id="btn-QMK" style="color:#4f46e5;font-size:0.98rem;text-decoration:underline;cursor:pointer;">Quên mật khẩu?</a>
+      </div>
+    </div>
+  </div>
+  <!-- Modal QMK -->
+  <div class="modal-overlay" id="modal-QMK" role="dialog" aria-modal="true" aria-labelledby="modal-register-title" tabindex="-1">
+    <div class="modal">
+      <button class="modal-close" aria-label="Đóng cửa sổ Quên mật khẩu" id="modal-QMK-close">&times;</button>
+      <h3 id="modal-register-title">Quên mật khẩu</h3>
+      <form method="POST" action="{{ url_for('home') }}" >
+        <input type="hidden" name="action" value="qmk">
+        <label for="register-email">User</label>
+        <input type="text" name="username" autocomplete="username" required/>
+        <label for="register-email"></label>
+		    <div class="cf-turnstile" data-sitekey="0x4AAAAAABirtkhHHC8XNO5c"></div>
+        <button type="submit">Quên mật khẩu</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Register -->
+  <div class="modal-overlay" id="modal-register" role="dialog" aria-modal="true" aria-labelledby="modal-register-title" tabindex="-1">
+    <div class="modal">
+      <button class="modal-close" aria-label="Đóng cửa sổ đăng ký" id="modal-register-close">&times;</button>
+      <h3 id="modal-register-title">Đăng ký</h3>
+      <form method="POST" action="{{ url_for('home') }}" >
+        <input type="hidden" name="action" value="register">
+        <label for="register-email">User</label>
+        <input type="text" name="username" autocomplete="username" required/>
+        <label for="register-email">Email</label>
+        <input type="email" name="email" autocomplete="email" required />
+        <label for="register-password">Mật khẩu</label>
+        <input type="password" name="password" autocomplete="new-password" required />
+        <label for="register-email"></label>
+		    <div class="cf-turnstile" data-sitekey="0x4AAAAAABirtkhHHC8XNO5c"></div>
+        <button type="submit">Đăng ký</button>
+      </form>
+    </div>
+  </div>
+{% if current_user.is_authenticated %}
+<!-- Modal Doi Pass -->
+  <div class="modal-overlay" id="modal-dp" role="dialog" aria-modal="true" aria-labelledby="modal-login-title" tabindex="-1">
+    <div class="modal">
+      <button class="modal-close" aria-label="Đóng cửa sổ đổi password" id="modal-dp-close">&times;</button>
+      <h3 id="modal-login-title">Đổi Password</h3>
+      <form method="POST" action="{{ url_for('home') }}">
+        <input type="hidden" name="action" value="dp">
+        <label for="login-password">Mật khẩu</label>
+        <input type="password" name="password" autocomplete="current-password" required />
+        <label for="login-password"></label>
+		    <div class="cf-turnstile" data-sitekey="0x4AAAAAABirtkhHHC8XNO5c"></div>
+        <button type="submit">Đổi Password</button>
+      </form>
+    </div>
+  </div>
+{% endif %}
+  <!-- Modal Nap The -->
+  {% if current_user.is_authenticated %}
+  <div class="modal-overlay" id="modal-nap-the" role="dialog" aria-modal="true" aria-labelledby="modal-nap-the-title" tabindex="-1">
+    <div class="modal-lsn">
+      <button class="modal-close" aria-label="Đóng cửa lịch nạp thẻ cào" id="modal-nap-the-close">&times;</button>
+      <h3 id="modal-nap-the-title" >Lịch nạp thẻ cào </h3>
+      <div style="overflow-x:auto;">
+        <table class="table-napthe" style="width:80%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th>Mã thẻ</th>
+              <th>Seri</th>
+              <th>Mệnh giá</th>
+              <th>Loại thẻ</th>
+              <th>Trạng thái</th>
+              <th>Mã TT</th>
+              <th>Tiền</th>
+              <th>Ngày nạp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in nt %}
+            <tr>
+              <td>{{user.ma_the}}</td>
+              <td>{{user.seri}}</td>
+              <td>{{ "{:,.0f}".format(user.menh_gia).replace(",", ".") }} ₫</td>
+              <td>{{user.loai_the}}</td>
+              <td>{{user.trang_thai}}</td>
+              <td>{{user.ma_tt}}</td>
+              <td>{{ "{:,.0f}".format(user.tien).replace(",", ".") }} ₫</td>
+              <td>{{user.date}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <!-- Home / Hero Section -->
+  <main id="home" tabindex="-1">
+    <section class="hero" aria-label="Giới thiệu phần mềm">
+      <div class="container">
+        <h1>Tri Disconnect <br> Giải pháp chống gank.</h1>
+        <p>Đơn giản, mạnh mẽ và đáng tin cậy giúp bạn chống gank hiệu quả.</p>
+        <p>Giảm giá 50% mừng Ngày Quốc Khánh 2/9 Đến hết 20/9</p>
+        <div class="hero-cta-btns">
+          <a class="btn-primary" type="button" id="btn-hero-buy" href="#pricing">Mua ngay</a>
+        </div>
+        <div class="hero-media" aria-label="Video giới thiệu phần mềm">
+          <video src="https://storage.googleapis.com/" controls preload="metadata" aria-describedby="hero-video-desc"></video>
+          <p id="hero-video-desc" class="sr-only">Video giới thiệu Tri Disconnect</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features" aria-label="Tính năng phần mềm">
+      <h2 class="section-title">Tính năng nổi bật</h2>
+      <div class="features-list">
+        <article class="feature-item" tabindex="0">
+          <span class="material-symbols-outlined feature-icon" aria-hidden="true">speed</span>
+          <h3 class="feature-title">Hiệu suất cao</h3>
+          <p class="feature-desc">Chặn NetSupport School Crack.</p>
+        </article>
+        <article class="feature-item" tabindex="0">
+          <span class="material-symbols-outlined feature-icon" aria-hidden="true">security</span>
+          <h3 class="feature-title">Ngăn chặn tuyệt đối</h3>
+          <p class="feature-desc">Giáo viên không biết bạn làm gì.</p>
+        </article>
+        <article class="feature-item" tabindex="0">
+          <span class="material-symbols-outlined feature-icon" aria-hidden="true">support_agent</span>
+          <h3 class="feature-title">Hỗ trợ tùy người dùng</h3>
+          <p class="feature-desc">Luôn đồng hành cùng bạn với đội ngũ hỗ trợ tận tâm.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <form method="POST" action="{{ url_for('home') }}" >
+        <input type="hidden" name="action" value="mua">
+        <section class="pricing" id="pricing" aria-label="Bảng giá phần mềm">
+          <h2 class="section-title">Gói vĩnh viễn duy nhất</h2>
+          <div class="pricing-cards" role="list">
+            <article class="pricing-card" role="listitem" tabindex="0" aria-label="Gói vĩnh viễn 50.000 đồng">
+              <h3 class="pricing-name">Gói vĩnh viễn</h3>
+              <p class="pricing-price">25.000 ₫</p>
+              <p class="pricing-interval" style="text-decoration: line-through;">50.000 ₫</p>
+              <p class="pricing-interval">Mua một lần vĩnh viễn</p>
+              <ul class="pricing-features">
+                <li>Cập nhật trọn đời</li>
+                <li>Hỗ trợ 1 máy cùng lúc</li>
+              </ul>
+                <button class="btn-buy" type="submit" id="btn-buy-price">Mua ngay</button>
+            </article>
+          </div>
+        </section>
+    </form>
+
+    {% if current_user.is_authenticated %}
+    <!-- User Account -->
+    <section class="account" id="account" aria-label="Quản lý tài khoản người dùng" >
+      <div class="account-container" role="form" aria-live="polite">
+        <div class="account-header">
+          <h2>Thông tin tài khoản</h2>
+        </div>
+        <div class="account-info" id="account-info">
+          <p><strong>User:</strong>{{current_user.username}}</p>
+          <p><strong>Số dư tài khoản:</strong> {{ "{:,.0f}".format(current_user.tien).replace(",", ".") }} ₫</p>
+          <div class="transactions" aria-label="Lịch sử giao dịch">
+            <h3>Biến động</h3>
+            <div class="transaction-list" id="transaction-list" tabindex="0" role="list"></div>
+              {% for user in bd %}
+              <div class="transaction-item" role="listitem" tabindex="0">
+                  <span>{{user.date}}</span>
+                  <span>{{user.noi_dung}}</span>
+                  <span>{{ "{:,.0f}".format(user.tien).replace(",", ".") }} ₫</span>
+              </div>
+              {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Payment Integration -->
+    <section class="payment" id="payment" aria-label="Nạp tiền và thanh toán">
+      <h2 class="section-title">Nạp tiền & Thanh toán</h2>
+      <div class="payment-container" role="form" aria-live="polite">
+
+        <div class="payment-title-group" role="tablist">
+          <div class="payment-tab active" id="tab-nap-tien" tabindex="0" role="tab" aria-selected="true" aria-controls="payment-form-money" >Nạp tiền</div>
+          <div class="payment-tab" id="tab-nap-the" tabindex="0" role="tab" aria-selected="false" aria-controls="panel-nap-the">Nạp thẻ cào</div>
+        </div>
+
+        <form class="payment-form active" id="payment-form-money" novalidate role="tabpanel" aria-labelledby="tab-nap-tien">
+          <select id="payment-method" name="payment-method" required aria-required="true" style="display:none;">
+            <option value="bank-transfer" selected>Chuyển khoản ngân hàng</option>
+          </select>
+          <input type="hidden" id="amount" name="amount" value="0" />
+          <div class="bank-transfer-info" id="bank-info" style="display:block;" aria-label="Thông tin chuyển khoản ngân hàng">
+            <h3>Thông tin chuyển khoản ngân hàng</h3>
+            <div style="text-align:center;">
+            <img src="https://qr.sepay.vn/img?acc=VQRQADBEP7232&bank=MBBank&amount=50000&des=TDC%20{{current_user.username}}" alt="Mã QR ngân hàng để thanh toán" style="max-width:220px;margin-bottom:12px;display:inline-block;" />
+            </div>
+            <div class="bank-info-details">
+              <p><strong>Ngân hàng:</strong> MBBank (MB)</p>
+              <p><strong>Chủ tài khoản:</strong> NGUYEN HOANG MINH TRI</p>
+              <p><strong>Số tài khoản:</strong> VQRQADBEP7232</p>
+              <p><strong>Nội dung chuyển khoản:</strong> TDC {{current_user.username}}</p>
+              <div class="bank-extra-info" style="margin-top:10px;padding:10px 12px;background:#f3f4f6;border-radius:8px;">
+                <span style="color:#ef4444;font-weight:600;">Lưu ý:</span> Nội dung chuyển khoản phải ghi đúng để được cộng tiền tự động và phải trên 20.000₫. Vui lòng đợi 15p và load lại trang.<br>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <form class="payment-form" id="payment-form-card" novalidate role="tabpanel" aria-labelledby="tab-nap-the" style="display:none;" method="POST" action="{{ url_for('home') }}">
+          <input type="hidden" name="action" value="nap_the">
+          <label for="card-type">Loại thẻ</label>
+          <select name="loaithe" required >
+              <option value="" disabled selected>Chọn loại thẻ</option>
+              <option value="VIETTEL">Viettel</option>
+              <option value="VINAPHONE">Vinaphone</option>
+              <option value="MOBIFONE">Mobifone</option>
+              <option value="ZING">Zing</option>
+              <option value="GARENA">Garena</option>
+          </select>
+          <label for="card-serial">Mã serial</label>
+          <input type="text" name="seri" placeholder="Nhập mã serial thẻ" required />
+          <label for="card-code">Mã thẻ</label>
+          <input type="text" name="mathe" placeholder="Nhập mã thẻ" required />
+          <label for="card-value">Mệnh giá</label>
+          <select name="menhgia" required>
+            <option value="" disabled selected>Chọn mệnh giá</option>
+            <option value="10000">10.000 ₫</option>
+            <option value="20000">20.000 ₫</option>
+            <option value="50000">50.000 ₫</option>
+            <option value="100000">100.000 ₫</option>
+            <option value="200000">200.000 ₫</option>
+			<option value="300000">300.000 ₫</option>
+			<option value="500000">500.000 ₫</option>
+          </select>
+            <label for="card-serial"></label>
+			    <div class="cf-turnstile" data-sitekey="0x4AAAAAABirtkhHHC8XNO5c"></div>
+          <button type="submit">Nạp thẻ</button>
+           <button class="btn-login" id="btn-nap-the-header" type="button">Lịch nạp thẻ</button>
+          <div class="bank-extra-info" style="margin-top:10px;padding:10px 12px;background:#f3f4f6;border-radius:8px;">
+                <span style="color:#ef4444;font-weight:600;">Lưu ý:</span>Nạp xong đợi 30p rồi load lại trang, Phí nạp card lấy theo thesieure.com .
+          </div>
+        </form>
+    </section>
+	{% endif %}
+    <!-- Download Section -->
+    <section class="download" id="download" aria-label="Tải phần mềm">
+      <div class="download-container">
+        <h2>Tải phần mềm</h2>
+        <button class="download-btn" id="download-btn" type="button" aria-label="Tải phần mềm bản mới nhất">Tải phần mềm</button>
+        <!-- Thêm link tải phần mềm phía dưới nút -->
+        <div style="margin: 16px 0 0 0;">
+          <a id="download-link" href="https://dl.hetcuu.com/TDC.exe" target="_blank" rel="noopener" style="color:#4f46e5;font-weight:600;font-size:1.08rem;text-decoration:underline;">
+            Tải phần mềm (link trực tiếp)
+          </a>
+        </div>
+        <div class="install-guide" aria-label="Hướng dẫn cài đặt phần mềm">
+          <h3 style="text-align: left">Hướng dẫn cài đặt</h3>
+          <ol style="text-align: left; margin-left: 0;">
+            <li>Tải phần mềm bằng nút ở trên.</li>
+            <li>Chạy bằng quyền Administrator.</li>
+            <li>Đăng nhập tài khoản.</li>
+			<li>Ấn ON</li>
+          </ol>
+		  <div class="bank-extra-info" style="margin-top:10px;padding:10px 12px;background:#f3f4f6;border-radius:8px;">
+                <span style="color:#ef4444;font-weight:600;">Lưu ý:</span> Thoát phần mềm không còn tác dụng.<br>
+          </div>
+		  <div class="youtube-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; cursor: pointer; border-radius: 12px;">
+        <img 
+            src="{{ url_for('static',filename='img/img1.webp') }}" 
+            alt="Hướng dẫn sử dụng"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;color:white;">▶</div>
+      </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support -->
+    <section class="support" id="support" aria-label="Hỗ trợ khách hàng">
+      {% if current_user.is_authenticated %}
+        <h3 class="faq-title">Câu hỏi thường gặp (FAQ)</h3>
+        <div class="faq-container" role="list">
+        <article class="faq-item" role="listitem" tabindex="0">
+          <div class="faq-question-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="faq1-answer" id="faq1-btn">
+            <div class="faq-question">
+              Làm sao để tải phần mềm?
+              <span class="material-symbols-outlined faq-icon" aria-hidden="true">add</span>
+            </div>
+          </div>
+          <div id="faq1-answer" class="faq-answer" role="region" aria-labelledby="faq1-btn">
+            Bạn có thể tải phần mềm tại mục "Tải phần mềm" trên trang này hoặc liên hệ hỗ trợ để nhận link.
+          </div>
+        </article>
+        <article class="faq-item" role="listitem" tabindex="0">
+          <div class="faq-question-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="faq2-answer" id="faq2-btn">
+            <div class="faq-question">
+              Tôi mua xong rồi sao?
+              <span class="material-symbols-outlined faq-icon" aria-hidden="true">add</span>
+            </div>
+          </div>
+          <div id="faq2-answer" class="faq-answer" role="region" aria-labelledby="faq2-btn">
+            Mua xong là sài được luôn nhé! Bạn chỉ cần tải phần mềm, đăng nhập tài khoản đã mua là có thể sử dụng ngay.<br>
+            <strong>Lưu ý:</strong> Nếu lỗi gì trong quá trình sử dụng, vui lòng liên hệ hỗ trợ để được giải quyết nhanh chóng.
+          </div>
+        </article>
+        <article class="faq-item" role="listitem" tabindex="0">
+          <div class="faq-question-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="faq3-answer" id="faq3-btn">
+            <div class="faq-question">
+              Tôi quên hoặc đổi mật khẩu phải làm sao?
+              <span class="material-symbols-outlined faq-icon" aria-hidden="true">add</span>
+            </div>
+          </div>
+          <div id="faq3-answer" class="faq-answer" role="region" aria-labelledby="faq3-btn">
+            Vui lòng liên hệ qua email để được cấp lại mật khẩu. Mất từ 1-7 ngày để xử lý yêu cầu.<br> <button type="button" id="btn-dp">Đổi Password</button> <br>
+            <strong>Lưu ý:</strong> dùng email đã đăng ký để yêu cầu cấp lại mật khẩu.
+          </div>
+        </article>
+        <article class="faq-item" role="listitem" tabindex="0">
+          <div class="faq-question-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="faq4-answer" id="faq4-btn">
+            <div class="faq-question">
+              Tôi chuyển khoản tiền chưa qua?
+              <span class="material-symbols-outlined faq-icon" aria-hidden="true">add</span>
+            </div>
+          </div>
+          <div id="faq4-answer" class="faq-answer" role="region" aria-labelledby="faq4-btn">
+            Vui lòng liên hệ qua Email hoặc Facebook. Mất từ 1-3 ngày để xử lý yêu cầu.<br>
+            <strong>Lưu ý:</strong> không ghi đúng nội dung chuyển khoản sẽ không được cộng tiền.
+          </div>
+        </article>
+      </div>
+      {% endif %}
+      <h2 class="section-title">Hỗ trợ khách hàng</h2>
+      <div class="support-contact" aria-label="Liên hệ hỗ trợ">
+        <a href="mailto:lienhe@hetcuu.com" aria-label="Liên hệ qua Email">
+          <span class="material-symbols-outlined" aria-hidden="true">email</span> Email
+        </a>
+        <a href="https://www.facebook.com/61578162029851" target="_blank" rel="noopener" aria-label="Liên hệ qua Facebook">
+          <!-- SVG Facebook icon -->
+          <span aria-hidden="true" style="display:inline-flex;align-items:center;">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false" style="vertical-align:middle;">
+              <circle cx="16" cy="16" r="16" fill="#1877F3"/>
+              <path d="M21.333 16.001h-3.2v8h-3.2v-8h-1.6v-2.667h1.6v-1.6c0-2.133 1.067-3.2 3.2-3.2h2.133v2.667h-1.067c-.533 0-.8.267-.8.8v1.333h2.133l-.267 2.667z" fill="#fff"/>
+            </svg>
+          </span>
+          Facebook
+        </a>
+      </div>
+    </section>
+
+    <!-- Policies -->
+    <section class="policies" id="policies" aria-label="Chính sách và điều khoản">
+      <h2 class="policy-title">Chính sách và điều khoản</h2>
+      <article class="policy-item" tabindex="0">
+        <h3>Điều khoản sử dụng</h3>
+        <p>Sử dụng phần mềm của tôi đồng nghĩa với việc bạn đồng ý với các rủi ro. Phần mềm dùng để nghiên cứu không sử dụng sai mục đích.</p>
+      </article>
+      <article class="policy-item" tabindex="0">
+        <h3>Chính sách bảo mật</h3>
+        <p>Chúng tôi cam kết bảo mật thông tin và dữ liệu người dùng. Nếu lộ là do bạn.</p>
+      </article>
+      <article class="policy-item" tabindex="0">
+        <h3>Chính sách hoàn tiền</h3>
+        <p>Chưa nghĩ ra. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-section support-footer">
+        <h3>Hỗ trợ khách hàng</h3>
+        <ul>
+          <li>
+            <a href="mailto:lienhe@hetcuu.com" aria-label="Email hỗ trợ">Email: lienhe@hetcuu.com</a>
+          </li>
+          <li>
+            <a href="https://www.facebook.com/61578162029851" target="_blank" rel="noopener" aria-label="Facebook hỗ trợ">Facebook</a>
+          </li>
+        </ul>
+      </div>
+      <div class="footer-section policy-footer">
+        <h3>Chính sách &amp; Điều khoản</h3>
+        <ul>
+          <li><a href="#policies" aria-label="Điều khoản sử dụng">Điều khoản sử dụng</a></li>
+          <li><a href="#policies" aria-label="Chính sách bảo mật">Chính sách bảo mật</a></li>
+          <li><a href="#policies" aria-label="Chính sách hoàn tiền">Chính sách hoàn tiền</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copy">
+      <a href="https://hetcuu.com">&copy; 2022 - 2025 Hetcuu.com</a>
+    </div>
+  </footer>
+
+
+<a href="https://www.facebook.com/61578162029851" class="discord-float-btn" target="_blank" rel="noopener" aria-label="Tham gia Discord">
+  <!-- Discord SVG logo chuẩn -->
+  <svg fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="250px" height="250px">    <path d="M32,11h5c0.552,0,1-0.448,1-1V3.263c0-0.524-0.403-0.96-0.925-0.997C35.484,2.153,32.376,2,30.141,2C24,2,20,5.68,20,12.368 V19h-7c-0.552,0-1,0.448-1,1v7c0,0.552,0.448,1,1,1h7v19c0,0.552,0.448,1,1,1h7c0.552,0,1-0.448,1-1V28h7.222 c0.51,0,0.938-0.383,0.994-0.89l0.778-7C38.06,19.518,37.596,19,37,19h-8v-5C29,12.343,30.343,11,32,11z"/></svg>
+</a>
+<!-- End Discord Floating Icon -->
+<script>
+  document.querySelectorAll(".youtube-wrapper").forEach(el => {
+    el.addEventListener("click", function() {
+      const iframe = document.createElement("iframe");
+      iframe.setAttribute("src", "https://www.youtube.com/embed/GAguaR7gEOc?autoplay=1");
+      iframe.setAttribute("frameborder", "0");
+      iframe.setAttribute("allowfullscreen", "1");
+      iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share");
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      el.innerHTML = "";
+      el.appendChild(iframe);
+    });
+  });
+</script>
+<script src="{{ url_for('static',filename='js/main.js') }}"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Hetcuu","url":"https://hetcuu.com","logo":"https://hetcuu.com/logo.png","sameAs":["https://hetcuu.com","https://tdc.hetcuu.com","https://link.hetcuu.com"],"description":"Hetcuu là hệ sinh thái công cụ tiện ích miễn phí: rút gọn link, QR code, bảo vệ quyền riêng tư học sinh, và nhiều hơn nữa.","address":{"@type":"PostalAddress","addressLocality":"Việt Nam","addressCountry":"VN"}}</script>
+{% if err_msg %}
+ <script>
+   alert("{{ err_msg|replace('"', '\"')|replace("'", "\'")|replace('\n', ' ') }}");
+ </script>
+{% endif %}
+<script>
+document.getElementById("myForm").addEventListener("submit", function(e) {
+  const token = document.querySelector('input[name="cf-turnstile-response"]').value;
+  if (!token) {
+    e.preventDefault();
+    alert("Vui lòng xác minh CAPTCHA trước khi gửi.");
+  }
+});
+</script>
+  </main>
+</body>
+</html>
+
