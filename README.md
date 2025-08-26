@@ -15,7 +15,3 @@ pip3 install -r requirements.txt
 ```
 * Thay Password MySQL với secret_key trong __init__.py
 * Thay API Key Capcha + API Email Trong utils.py
-
-```bash
-python3 -m TDC.models
-```
