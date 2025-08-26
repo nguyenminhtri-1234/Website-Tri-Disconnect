@@ -1,2 +1,7 @@
 # Website Tri Disconnect
 Website bán phần mềm
+## 🛠️ Cài đặt
+Hướng dẫn cách cài đặt dự án:
+```bash
+git clone https://github.com/nguyenminhtri-1234/Website-Tri-Disconnect.git
+cd Website-Tri-Disconnect
